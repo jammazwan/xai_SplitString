@@ -1,25 +1,23 @@
 package jammazwan.xai;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-
 
 public class XaiRoutes extends RouteBuilder {
 
-    
-    
+	@Override
+	public void configure() throws Exception {
+		/*
+		 * to get a visual, follow tokenize() with .to("${body}")
+		 */
+		
+		// LINE FEED COUNT
+		from("file://../jammazwan.shared/src/main/resources/data/xml/?noop=true&fileName=employees.xml").split()
+				.tokenize("\n").to("mock:assert1");
 
-    @Override
-    public void configure() throws Exception {
-        from("direct:xai")
-            .process(new Processor() {
-                public void process(Exchange exchange) throws Exception {
-                    String text = exchange.getIn().getBody(String.class);
-                    String newAnswer = "My " + text;
-                    exchange.getOut().setBody(newAnswer);
-                }
-            });
-    }
+		// WHITESPACE REGEX DELIMITER COUNT
+		from("file://./?noop=true&fileName=README.md").split().tokenize("(\\W+)\\s*", null, true).to("mock:assert2");
+
+		// PAIR COUNT
+		from("file://./?noop=true&fileName=NOTES.md").split().tokenizePair("[", "]").to("mock:assert3");
+	}
 }
